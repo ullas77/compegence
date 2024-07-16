@@ -76,5 +76,4 @@ export default {
 </script>
 
 <style scoped>
-/* ... (styles remain the same) ... */
 </style>

@@ -1,11 +1,26 @@
 <template>
   <div class="home-page">
     <h1>Latest Posts</h1>
+
+    <!-- Search and Sort Controls -->
+    <div class="controls">
+      <input type="text" v-model="searchQuery" placeholder="Search posts...">
+      <select v-model="sortCriteria">
+        <option value="title">Sort by Title</option>
+        <option value="author">Sort by Author</option>
+      </select>
+      <button @click="clearFilters">Clear Filters</button>
+    </div>
+
+    <!-- Loading, Error, and Data Display -->
     <div v-if="loading">Loading posts...</div>
+
     <div v-else-if="error">{{ error }}</div>
-    <div v-else-if="posts.length === 0">No posts available.</div>
+
+    <div v-else-if="filteredPosts.length === 0">No posts available.</div>
+
     <div v-else>
-      <div v-for="post in posts" :key="post.id" class="post" @click="goToPost(post.id)">
+      <div v-for="post in filteredPosts" :key="post.id" class="post" @click="goToPost(post.id)">
         <h2>{{ post.title }}</h2>
         <p>{{ post.body }}</p>
         <p class="author"><strong>Author:</strong> {{ getUserName(post.userId) }}</p>
@@ -22,11 +37,29 @@ export default {
   data() {
     return {
       loading: true,
-      error: null
+      error: null,
+      searchQuery: '',
+      sortCriteria: 'title'
     }
   },
   computed: {
-    ...mapState(['posts', 'users'])
+    ...mapState(['posts', 'users']),
+    filteredPosts() {
+      let filtered = this.posts;
+
+      if (!Array.isArray(filtered)) {
+        return [];
+      }
+
+      if (this.searchQuery) {
+        filtered = filtered.filter(post =>
+          post.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          post.body.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      }
+
+      return this.sortPosts(filtered);
+    }
   },
   methods: {
     ...mapActions(['fetchPosts', 'fetchUsers']),
@@ -37,16 +70,29 @@ export default {
     goToPost(postId) {
       this.$router.push(`/post/${postId}`)
     },
+    sortPosts(posts) {
+      if (!Array.isArray(posts)) {
+        return [];
+      }
+
+      if (this.sortCriteria === 'title') {
+        return posts.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (this.sortCriteria === 'author') {
+        return posts.sort((a, b) => this.getUserName(a.userId).localeCompare(this.getUserName(b.userId)));
+      }
+      return posts;
+    },
+    clearFilters() {
+      this.searchQuery = '';
+      this.sortCriteria = 'title'; // Reset sort criteria to 'title' when clearing filters
+    },
     async loadData() {
       this.loading = true
       this.error = null
       try {
         await this.fetchPosts()
         await this.fetchUsers()
-        console.log('Posts:', this.posts)
-        console.log('Users:', this.users)
       } catch (error) {
-        console.error('Error fetching data:', error)
         this.error = 'Failed to load data. Please try again later.'
       } finally {
         this.loading = false
@@ -58,11 +104,40 @@ export default {
   }
 }
 </script>
+
 <style scoped>
-.home-page h1 {
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 30px;
+.home-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.controls {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.controls input[type="text"], .controls select {
+  margin-right: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.controls button {
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.controls button:hover {
+  background-color: #2980b9;
 }
 
 .post {

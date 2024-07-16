@@ -58,7 +58,39 @@ export default {
   }
 }
 </script>
-
 <style scoped>
-/* ... (styles remain the same) ... */
+.home-page h1 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.post {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  cursor: pointer; /* This line changes the cursor to a pointer */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.post h2 {
+  color: #3498db;
+  margin-top: 0;
+}
+
+.post p {
+  color: #555;
+}
+
+.post .author {
+  color: #7f8c8d;
+  font-style: italic;
+}
 </style>
